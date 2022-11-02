@@ -101,41 +101,10 @@ const short int seq[95][8]={
 {8, 5, 2, 4, 3, 1, 6, 7},
 {2, 8, 7, 1, 4, 5, 3, 6}
 };
-/*void swap(char *ptr1, char *ptr2 )
-	{
-		char temp;
-		temp = *ptr1;
-		*ptr1 = *ptr2;
-		*ptr2 = temp;
 
-	}*/
-/* int *indx(char *string, char *x){
-	char *e;
-	int *ind;
-	e = strchr(string, x);
-	ind =(int)(e - string);
-	return ind;
-} */
-
-/*char *reverserx(char *str)
-{
-	int n = (int)strlen (str);
-	char *x,*y;
-
-
-	// Swap character starting from two
-
-	// corners
-
-	for (int i = 0; i < n / 2; i++) {
-		swap(&str[n - i - 1],&str[n - i - 1]);
-	}
-	//printf("%s",str);
-	//return str;
-	return str;
-}*/
 
 int **reverser(char *dat){
+	// reverse the string and put the value back to dat
 	int i,j=0;
 	int len = strlen(dat);
 	i=len-1;
@@ -151,9 +120,11 @@ int **reverser(char *dat){
 		//printf("%s\n",data);
 	return 0;
 }
-//gcc -c rcrypt1.c -I "D:\Ratul\Python Setup\include" -o rcrypt1.exe
-//char *encrypt(char str
+
+
 char *add_space(char *data){
+	// ADD SPACE AT THE END OF MESSAGE TO MAKE SURE THE MESSAGE LENGTH IS DIVISIBLE BY 8
+	
 	//printf("%s",data);
 	unsigned int dat_len=strlen(data);
 	//printf("%u", dat_len);
@@ -167,31 +138,40 @@ char *add_space(char *data){
 	return data;
 }
 
-char *front2back_en(char *data, const int x, int dat_len){
+char *front2back_en(char *data, int to_move, int dat_len){
+	// ON ENCRYPT, BEFORE REARRANGING WITH KEY SEQUENCE, SENDS 2 CHARECTER FROM FRONT TO BACK
+	// to_move: number of charecters to move
+	
 	//int a=0;
 	//printf("%s",data);
 	char front[8]={};
 	//while(a<8){printf("f%cf",front[a]);a++;}
 	int j=0,i=0;
 	//printf(sizeof(front));
-	while(i<x){
+	while(i<to_move){
 		front[i]=data[i];
 		i++;}
 	//printf("%d\n",strlen(front));
 	while(i<dat_len){
-		data[i-x]=data[i];
+		data[i-to_move]=data[i];
 		i++;
 	}
-	while(j<x){
-		data[(i+j)-x]=front[j];
+	while(j<to_move){
+		data[(i+j)-to_move]=front[j];
 		j++;
 	}
 	return data;
-	}
+}
+
 char *_encrypt(char *data, char c){
-	char back[9]={};
+	// REARRANGE DATA (Splitted by LIST OF 8 CHARECTERS) BASED ON SEQUENCE BY THE KEY CHARECTER
+	// c: the current key charecter
+	
+	char back[9]={}; // backup of data to look at when rearranging
 	int i=0,j,x,n,loop;
 	int serial[8];
+	
+	// getting serial
 	for(loop = 0; loop < 8; loop++) {
 		int ind;
 		// e = strchr(c_seq, c);
@@ -199,16 +179,19 @@ char *_encrypt(char *data, char c){
 		serial[loop] = seq[ind][loop];
 	}
 	int len=(int)strlen(data);
-
+	
+	
 	while (i<len){
 		x=0;
 		n=i;
+		// making 8 charecter list backuo
 		while(n<i+8){
 			back[x]=data[n];
 			n++;
 			x++;
 		}
 		x=0;
+		// the rearrange
 		for (j = 0; j < 8; j++){
 			data[i+x]=back[serial[j]-1];
 			x=(x+1)%8;
@@ -216,18 +199,20 @@ char *_encrypt(char *data, char c){
 		}
 
 		i+=8;
+		// moving to next 8 charecter
 
 	}
 	return data;
 }
 char *encrypt(char *data, char *key){
-	// int dat_i;
+	// WHY FRONT2BACK 1ST, THEN ENCRYPT?
+	// => because if the key is 1 charecter long, theres no meaning of front2back, also doing at the end has no special meaning to this encryption. So move them 1st, then do encryption to tighten the flow.
 	data = add_space(data);
 	unsigned int key_i=0;
 	unsigned int dat_len= strlen(data);
 	unsigned int key_len= strlen(key);
 	while(key_i<key_len){
-		// dat_i=0;
+		
  		front2back_en(data, 2, (int)dat_len);
 		_encrypt(data,key[key_i]);
 	 key_i++;
@@ -235,23 +220,25 @@ char *encrypt(char *data, char *key){
  return data;
 }
 
-char *b2f_de(char *data){
+char *b2f_de(char *data, int to_move){
+	// ON DECRYPT, AFTER REARRANGING WITH KEY SEQUENCE, SENDS 2 CHARECTER FROM BACK TO FRONT
+	// to_move: number of charecters to move
 	char front[MAX_L]={};
 
-	int x=2, len= strlen(data),i=0;
-	while (i<len-x){
+	int len= strlen(data), i=0;
+	while (i<len-to_move){
 		front[i]=data[i];
 		i++;
 	}
 	//strncpy(front,data,(size_t)len-x);
 	i=0;
-	while(i<x){
-		data[i]=data[len+i-x];
+	while(i<to_move){
+		data[i]=data[len+i-to_move];
 		i++;
 	}
 	i=0;
-	while(i<len-x){
-		data[i+x]=front[i];
+	while(i<len-to_move){
+		data[i+to_move]=front[i];
 		i++;
 	}
 	//int a=0;
@@ -274,8 +261,13 @@ char *b2f_de(char *data){
 
 
 char *_decrypt(char *data, char c){
-
+	// REVERT BACK TO ORIGINAL STATE FROM REARRANGED CHARECTERS
+	
+	// things are same as _encrypt
+	
 	char back[9]={};
+	
+	
 	int i=0,j,x,n,loop;
 	int serial[8];
 	for(loop = 0; loop < 8; loop++) {
@@ -295,7 +287,8 @@ char *_decrypt(char *data, char c){
 			x++;
 		}
 		x=0;
-		// printf("==");
+		
+		// the revertion
 		for (j = 0; j < 8; j++){
 			// printf("%d",serial[j]);
 			data[i+serial[j]-1]=back[x];
@@ -319,8 +312,7 @@ char *decrypt(char *data, char *key){
 	reverser(key);
 	// printf("\n3	%s\t%s",data,key);
 	while(key_i<key_len){
-		// dat_i=0;
-		// printf("\n4	%s\t%s",data,key);
+		// Decrypt 1st, then back2front
  		_decrypt(data,key[key_i]);
 		// printf("\n5	%s\t%s",data,key);
 		b2f_de(data);
@@ -334,13 +326,23 @@ int main() {
 	char input[MAX_L] = {};
 	char key[MAX_L] = {};
 	char input2[MAX_L];
+	
+	
 	printf("Enter message: ");
+	
+	
 	fgets(input, MAX_L, stdin);
 	char *pos;
 	if ((pos=strchr(input, '\n')) != NULL)
 	*pos = '\0';
+	// I REALLY DONT REMEMBER THE USE OF POS (POSITION MAYBE?)
+	
 	strcpy(input2, input);
+	
+	
 	printf("Enter key: ");
+	
+	
 	fgets(key, MAX_L, stdin);
 	//char *pos;
 	if ((pos=strchr(key, '\n')) != NULL)
@@ -350,8 +352,15 @@ int main() {
 	// printf("%s",input);
 	double msg_len= strlen(input);
 	double key_len= strlen(key);
+	
 	clock_t en_begin = clock();
-	char *light=encrypt(input, key);
+	
+	
+	// LIGHT IS THE ENCRYPTED VERSION OF DATA
+	char *light=encrypt(input, key); 
+	
+	
+	
 	clock_t en_end = clock();
 	double en_time_spent = (double)(en_end - en_begin) / CLOCKS_PER_SEC;
 	printf("encrypted\n=========\n\n%s\n\nEncrypted in %fs",light,en_time_spent);
@@ -359,7 +368,15 @@ int main() {
 	//reverser(&aaa);
 	//printf("%s",aaa);
 	clock_t de_begin = clock();
+	
+	
+	// DARK IS THE DECRYPTED VERSION OF INPUT
 	char *dark=decrypt(input2,key);
+	
+	
+	
+	// THESE TIMING STUFFS ARE JUST FOR OPTIMISATION CHECK
+	
 	clock_t de_end = clock();
 	double de_time_spent = (double)(de_end - de_begin) / CLOCKS_PER_SEC;
 	printf("\ndecrypted\n=========\n\n%s\n\nDecrypted in %fs\n",dark,de_time_spent);
