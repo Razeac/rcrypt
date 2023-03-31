@@ -315,7 +315,7 @@ char *decrypt(char *data, char *key){
 		// Decrypt 1st, then back2front
  		_decrypt(data,key[key_i]);
 		// printf("\n5	%s\t%s",data,key);
-		b2f_de(data);
+		b2f_de(data, 2);
 	 		key_i++;
 	}
  return data;

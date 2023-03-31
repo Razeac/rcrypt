@@ -1,5 +1,9 @@
 // header file for all c++ libraries
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+#include <chrono>
+#include <stdio.h>
+#include <string.h>
 using namespace std;
 const int MAX_L  = 104857;
 const char c_seq[96] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+-*/.,\\<>?;':\"[]{}|_=`~!@#$%^&() ";
@@ -149,6 +153,9 @@ char* front2back_en(char *data, const int x, const int dat_len) {
         data[(i + j) - x] = front[j];
         j++;
     }
+
+    // std::cout << "2" << std::endl;
+
     return data;
 }
 
@@ -190,6 +197,8 @@ char* _encrypt(char* data, char* c) {
         // moving to next 8 charecter
         i += 8;
     }
+    // std::cout << "3" << std::endl;
+
     return data;
 }
 
@@ -202,6 +211,7 @@ char *encrypt(char *data, char *key) {
 	unsigned int key_i = 0;
 	unsigned int dat_len = strlen(data);
 	unsigned int key_len = strlen(key);
+    // std::cout << "1" << std::endl;
 	while(key_i < key_len) {
  		front2back_en(data, 2, (int)dat_len);
 		_encrypt(data, &key[key_i]);
@@ -212,7 +222,7 @@ char *encrypt(char *data, char *key) {
 
 // ON DECRYPT, AFTER REARRANGING WITH KEY SEQUENCE, SENDS 2 CHARECTER FROM BACK TO FRONT
 // x: number of charecters to move
-char* b2f_de(data, 2) {
+char* b2f_de(char *data, int x=2) {
     char front[MAX_L] = {};
     int len = strlen(data), i = 0;
     while (i < len - x) {
@@ -278,72 +288,91 @@ char *_decrypt(char *data, char c)
 // THEN MOVE 2 CHARECTERS FROM BACK TO FRONT
 char *decrypt(char *data, char *key) {
 	// int dat_i;
+        // std::cout << "0" << std::endl;
 	data = add_space(data);
+
+        // std::cout << "1" << std::endl;
+
 	// printf("\n1	%s",data);
 	unsigned int key_i = 0;
 	// unsigned int dat_len= strlen(data);
 	unsigned int key_len = strlen(key);
 	// printf("\n2	%s\t%s",data,key);
 	reverser(key);
+        // std::cout << "2" << std::endl;
+
 	// printf("\n3	%s\t%s",data,key);
 	while(key_i < key_len) {
 		// Decrypt 1st, then back2front
  		_decrypt(data, key[key_i]);
+            // std::cout << "3" << std::endl;
+
 		// printf("\n5	%s\t%s",data,key);
 		b2f_de(data);
+            // std::cout << "4" << std::endl;
 	 	key_i++;
 	}
+
+        // std::cout << "5" << std::endl;
+
 	return data;
 }
 
 int main() {
-    char input[MAX_L] = {};
-    char key[MAX_L] = {};
-    char input2[MAX_L];
+    string _input;
+    string _key;
+    string _input2;
 
     std::cout << "Enter message: ";
-    std::cin.getline(input, MAX_L);
+    getline (cin, _input);
     // Remove newline character from input
-    if (input[strlen(input) - 1] == '\n') {
-        input[strlen(input) - 1] = '\0';
-    }
+    // if (input[strlen(input) - 1] == '\n') {
+    //     input[strlen(input) - 1] = '\0';
+    // }
 
     // Copy input to input2
-    strcpy(input2, input);
+    _input2 = _input;
 
     std::cout << "Enter key: ";
-    std::cin.getline(key, MAX_L);
+    getline (cin, _key);
     // Remove newline character from key
-    if (key[strlen(key) - 1] == '\n') {
-        key[strlen(key) - 1] = '\0';
-    }
+    // if (key[strlen(key) - 1] == '\n') {
+    //     key[strlen(key) - 1] = '\0';
+    // }
 
-    double msg_len = strlen(input);
-    double key_len = strlen(key);
+    double msg_len = _input.length();
+    double key_len = _key.length();
+
+    char* input = strdup(_input.c_str());
+    char* input2 = strdup(_input2.c_str());
+    char* key = strdup(_key.c_str());
 
     auto en_begin = std::chrono::high_resolution_clock::now();
-    std::string light = encrypt(input.c_str(), key.c_str());
+    char* light = encrypt(input, key);
     auto en_end = std::chrono::high_resolution_clock::now();
-    auto en_time_spent = std::chrono::duration<double>(en_end - en_begin).count();
+    auto en_time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(en_end - en_begin).count();
         std::cout << "encrypted" << std::endl;
         std::cout << "=========" << std::endl;
         std::cout << light << std::endl;
-        std::cout << "Encrypted in " << en_time_spent << "s" << std::endl;
+        std::cout << "Encrypted in " << en_time_spent << "ms" << std::endl;
+
+    cout << "====================" << endl;
 
     auto de_begin = std::chrono::high_resolution_clock::now();
-    std::string dark = decrypt(input.c_str(), key.c_str());
+    cout << "====================" << endl;
+    char* dark = decrypt(input2, key);
     auto de_end = std::chrono::high_resolution_clock::now();
-    auto de_time_spent = std::chrono::duration<double>(de_end - de_begin).count();
+    auto de_time_spent = std::chrono::duration_cast<std::chrono::milliseconds>(de_end - de_begin).count();
         std::cout << "decrypted" << std::endl;
         std::cout << "=========" << std::endl;
         std::cout << dark << std::endl;
-        std::cout << "Decrypted in " << de_time_spent << "s" << std::endl;
+        std::cout << "Decrypted in " << de_time_spent << "ms" << std::endl;
 
         std::cout << "Msg len= " << msg_len << std::endl;
         std::cout << "Key len= " << key_len << std::endl;
-        std::cout << "Encrypted in " << en_time_spent << "s" << std::endl;
-        std::cout << "Decrypted in " << de_time_spent << "s" << std::endl;
-        std::cout << "  time per key (en): " << (double)(en_time_spent / key_len) << "s" << std::endl;
-        std::cout << "  time per key (de): " << (double)(de_time_spent / key_len) << "s" << std::endl;
+        std::cout << "Encrypted in " << en_time_spent << "ms" << std::endl;
+        std::cout << "Decrypted in " << de_time_spent << "ms" << std::endl;
+        std::cout << "  time per key (en): " << (double)(en_time_spent / key_len) << "ms" << std::endl;
+        std::cout << "  time per key (de): " << (double)(de_time_spent / key_len) << "ms" << std::endl;
     return 0;
 }
