@@ -2,8 +2,7 @@
 #include <bits/stdc++.h>
 using namespace std;
 const int MAX_L  = 104857;
-const char c_seq[96] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM
-NOPQRSTUVWXYZ1234567890+-*/.,\\<>?;':\"[]{}|_=`~!@#$%^&() ";
+const char c_seq[96] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890+-*/.,\\<>?;':\"[]{}|_=`~!@#$%^&() ";
 const short int seq[95][8] = {
 {5, 8, 1, 7, 2, 4, 3, 6},
 {7, 2, 1, 6, 3, 8, 4, 5},
